@@ -1,0 +1,1 @@
+Frontend with Tailwind, ZXing scanner, and PWA support. See top-level README for run steps.
