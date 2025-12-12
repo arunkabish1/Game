@@ -1,6 +1,8 @@
-[build]
-builder = "nixpacks"
-buildCommand = "cd backend && npm install"
+[phases.setup]
+nixPkgs = ["nodejs", "npm"]
 
-[deploy]
-startCommand = "node backend/server.js"
+[phases.install]
+cmd = "cd backend && npm install"
+
+[start]
+cmd = "node backend/server.js"
