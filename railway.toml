@@ -1,5 +1,9 @@
-[phases.setup]
-nixPkgs = ["nodejs", "npm"]
+[build]
+builder = "NIXPACKS"
+
+[build.nixpacks]
+# install node + npm
+packages = ["nodejs", "npm"]
 
 [phases.install]
 cmd = "cd backend && npm install"
