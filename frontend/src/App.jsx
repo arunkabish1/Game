@@ -12,6 +12,10 @@ export default function App() {
   const [teamState, setTeamState] = useState(null);
   const [serverStartTs, setServerStartTs] = useState(null);
 
+  // screen = "home" | "scan" | "leaderboard"
+  const [screen, setScreen] = useState("home");
+
+  // SOCKET LISTENERS
   useEffect(() => {
     socket.on("connect", () => console.log("socket connected:", socket.id));
     socket.on("disconnect", () => console.log("socket disconnected"));
@@ -37,12 +41,14 @@ export default function App() {
     };
   }, [teamId]);
 
+  // Load initial data
   useEffect(() => {
     fetch(BACKEND + "/api/leaderboard")
       .then((r) => r.json())
       .then((j) => setLeaderboard(j.leaderboard || []));
   }, []);
 
+  // Team switch
   useEffect(() => {
     socket.emit("join", { teamId });
 
@@ -60,18 +66,22 @@ export default function App() {
       .then((j) => setLeaderboard(j.leaderboard || []));
   }, [teamId]);
 
-  return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-white">
+  // -------------------------
+  // HOME SCREEN
+  // -------------------------
+  if (screen === "home") {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center px-4">
 
-      <header className="bg-slate-800 p-3 flex flex-col md:flex-row items-center justify-between gap-3">
-        <h1 className="text-xl font-bold tracking-wide">QR Hunt</h1>
+        <h1 className="text-3xl font-bold mb-8">QR Hunt</h1>
 
-        <div className="text-sm flex items-center gap-2">
-          <label className="text-slate-300">Team:</label>
+        {/* team selector */}
+        <div className="mb-8">
+          <label className="mr-2 text-slate-300">Team:</label>
           <select
             value={teamId}
             onChange={(e) => setTeamId(e.target.value)}
-            className="rounded px-3 py-2 bg-slate-700 border border-slate-600"
+            className="rounded px-3 py-2 bg-slate-800 border border-slate-700"
           >
             <option value="team1">Team Alpha</option>
             <option value="team2">Team Bravo</option>
@@ -81,22 +91,64 @@ export default function App() {
             <option value="team6">Team Foxtrot</option>
           </select>
         </div>
-      </header>
 
-      <main className="flex-1 p-3 md:p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <section className="bg-slate-900 rounded-xl p-3 shadow-lg md:col-span-2">
-          <Scan teamId={teamId} socket={socket} serverStartTs={serverStartTs} />
-        </section>
+        {/* MAIN BUTTONS */}
+        <button
+          onClick={() => setScreen("scan")}
+          className="w-64 py-4 text-lg font-semibold bg-green-600 rounded-xl mb-4 hover:bg-green-700"
+        >
+          Scan QR
+        </button>
 
-        <aside className="bg-slate-900 rounded-xl p-3 shadow-lg">
-          <Leaderboard data={leaderboard} selectedTeamId={teamId} />
-        </aside>
-      </main>
+        <button
+          onClick={() => setScreen("leaderboard")}
+          className="w-64 py-4 text-lg font-semibold bg-blue-600 rounded-xl hover:bg-blue-700"
+        >
+          Leaderboard
+        </button>
 
-      <footer className="p-2 text-center text-xs text-slate-400">
-        Installable PWA — Camera Required for QR Scanning
-      </footer>
+        <footer className="absolute bottom-4 text-slate-500 text-xs">
+          Installable PWA — Camera Required
+        </footer>
+      </div>
+    );
+  }
 
-    </div>
-  );
+  // -------------------------
+  // SCAN SCREEN
+  // -------------------------
+  if (screen === "scan") {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white p-4">
+
+        <button
+          onClick={() => setScreen("home")}
+          className="mb-4 px-3 py-2 bg-slate-700 rounded-lg"
+        >
+          ← Back
+        </button>
+
+        <Scan teamId={teamId} socket={socket} serverStartTs={serverStartTs} />
+      </div>
+    );
+  }
+
+  // -------------------------
+  // LEADERBOARD SCREEN
+  // -------------------------
+  if (screen === "leaderboard") {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white p-4">
+
+        <button
+          onClick={() => setScreen("home")}
+          className="mb-4 px-3 py-2 bg-slate-700 rounded-lg"
+        >
+          ← Back
+        </button>
+
+        <Leaderboard data={leaderboard} selectedTeamId={teamId} />
+      </div>
+    );
+  }
 }

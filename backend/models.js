@@ -1,11 +1,15 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
-const TeamSchema = new mongoose.Schema({
-  id: String,
-  name: String,
-  progress: Number,
-  total_time_ms: Number,
-  currentLevelStart: Number,
+
+const TeamSchema = new Schema({
+  id: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
+
+  // IMPORTANT DEFAULTS
+  progress: { type: Number, default: 1 },  // Teams always start at Level 1
+  total_time_ms: { type: Number, default: 0 },
+  currentLevelStart: { type: Number, default: null },
+
   level_times: {
     type: Map,
     of: Number,
@@ -18,12 +22,14 @@ const QuestionSchema = new Schema({
   question: String,
   answer: String
 });
+
 const TokenSchema = new Schema({
   level: Number,
   qid: String,
   token: String,
   issuedAt: Number
 });
+
 const AttemptSchema = new Schema({
   teamId: String,
   level: Number,
@@ -32,6 +38,7 @@ const AttemptSchema = new Schema({
   timeTaken: Number,
   ts: Number
 });
+
 module.exports = {
   Team: mongoose.model('Team', TeamSchema),
   Question: mongoose.model('Question', QuestionSchema),
