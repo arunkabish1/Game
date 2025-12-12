@@ -1,0 +1,8 @@
+{
+  "name": "qr-backend",
+  "private": true,
+  "scripts": {
+    "start": "node backend/server.js",
+    "build": "echo \"Nothing to build\""
+  }
+}
