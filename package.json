@@ -1,8 +1,8 @@
 {
-  "name": "qr-backend",
+  "name": "qr-hunt-backend",
   "private": true,
   "scripts": {
-    "start": "node backend/server.js",
-    "build": "echo \"Nothing to build\""
+    "start": "cd backend && node server.js",
+    "install": "cd backend && npm install"
   }
 }
