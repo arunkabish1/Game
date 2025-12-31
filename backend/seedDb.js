@@ -1,41 +1,122 @@
-require('dotenv').config();
-const mongoose = require('mongoose');
-const { Team, Question } = require('./models');
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/qr_game';
+require("dotenv").config();
+const mongoose = require("mongoose");
+const { Team, Question } = require("./models");
+
+const MONGODB_URI =
+  process.env.MONGODB_URI || "mongodb://localhost:27017/qr_game";
+
+/* -----------------------------------
+   QUESTIONS WITH OPTIONS (MCQ)
+----------------------------------- */
 const QUESTIONS = [
-  { level: 1, question: "What is 2+2?", answer: "4" },
-  { level: 2, question: "What is the capital of France?", answer: "Paris" },
-  { level: 3, question: "What color do you get mixing red and white?", answer: "Pink" },
-  { level: 4, question: "How many hours in a day?", answer: "24" },
-  { level: 5, question: "What is the 3rd planet from the Sun?", answer: "Earth" },
-  { level: 6, question: "How many continents are there?", answer: "7" },
-  { level: 7, question: "What is H2O commonly called?", answer: "Water" },
-  { level: 8, question: "What day comes after Monday?", answer: "Tuesday" },
-  { level: 9, question: "What is the square root of 81?", answer: "9" },
-  { level: 10, question: "Final: Type 'WIN' to finish", answer: "WIN" }
+  {
+    level: 1,
+    question: "NFA எந்த வருடம் ஆரம்பிக்கப்பட்டது?",
+    options: ["2010", "2011", "2013", "2015"],
+    answer: "2013",
+  },
+  {
+    level: 2,
+    question: "NFA தமிழ் வகுப்புகளுக்கான மையங்கள் எத்தனை?",
+    options: ["2", "3", "4", "5"],
+    answer: "4",
+  },
+  {
+    level: 3,
+    question: "NFA-வில் தமிழ் வகுப்புகள் எந்த கிழமைகளில் நடக்கின்றன?",
+    options: ["வெள்ளி", "சனி", "வெள்ளி & சனி", "ஞாயிறு"],
+    answer: "வெள்ளி & சனி",
+  },
+  {
+    level: 4,
+    question: "மங்காப் மையத்தின் வகுப்பு நேரம் என்ன?",
+    options: ["8.00–9.30", "9.30–11.00", "10.00–11.30", "Evening"],
+    answer: "9.30–11.00",
+  },
+  {
+    level: 5,
+    question:
+      "NFA வகுப்புகள் தமிழ்நாடு அரசின் எந்த அங்கீகரிக்கப்பட்ட துறையுடன் இணைக்கப்பட்டுள்ளன?",
+    options: [
+      "தமிழ் இணையவழிக் கல்வி",
+      "தமிழ் வளர்ச்சித் துறை",
+      "பள்ளிக் கல்வித் துறை",
+      "பல்கலைக்கழகம்",
+    ],
+    answer: "தமிழ் இணையவழிக் கல்வி",
+  },
+  {
+    level: 6,
+    question: "NFA நிறுவனரின் பெயர் என்ன?",
+    options: ["செந்தை ரவி", "ரவி குமார்", "அருண் ரவி", "முரளி"],
+    answer: "செந்தை ரவி",
+  },
+  {
+    level: 7,
+    question: "இந்த NFA பொங்கல் விழாவின் ஆதரவாளர் (Sponsor) யார்?",
+    options: ["Supreme Cargo", "ABC Logistics", "Star Transport", "NFA"],
+    answer: "Supreme Cargo",
+  },
+  {
+    level: 8,
+    question: "கடந்த ஆண்டு NFA பொங்கல் விழா எந்த இடத்தில் நடைபெற்றது?",
+    options: ["Mangaf", "Fahaheel", "Wafra", "Salmiya"],
+    answer: "Wafra",
+  },
+  {
+    level: 9,
+    question: "NFA என்றால் என்ன?",
+    options: [
+      "நந்தவனம் குடும்ப சங்கம்",
+      "நவீன கல்வி அமைப்பு",
+      "தேசிய அமைப்பு",
+      "தமிழ் சங்கம்",
+    ],
+    answer: "நந்தவனம் குடும்ப சங்கம்",
+  },
+  {
+    level: 10,
+    question: "வெற்றி என்றால் என்ன?",
+    options: ["தோல்வி", "முயற்சி", "வெற்றி", "போராட்டம்"],
+    answer: "வெற்றி",
+  },
 ];
+
+/* -----------------------------------
+   TEAMS
+----------------------------------- */
 const TEAMS = [
-  { id: "team1", name: "Team Alpha" },
-  { id: "team2", name: "Team Bravo" },
-  { id: "team3", name: "Team Charlie" },
-  { id: "team4", name: "Team Delta" },
-  { id: "team5", name: "Team Echo" },
-  { id: "team6", name: "Team Foxtrot" }
+  { id: "team1", name: "Team Red" },
+  { id: "team2", name: "Team Yellow" },
+  { id: "team3", name: "Team Green" },
+  { id: "team4", name: "Team Purple" },
+  { id: "team5", name: "Team White" },
+  { id: "team6", name: "Team Pink" },
 ];
-async function seed(){
+
+/* -----------------------------------
+   SEED FUNCTION
+----------------------------------- */
+async function seed() {
   await mongoose.connect(MONGODB_URI);
-  console.log('Connected to', MONGODB_URI);
-  const qCount = await Question.countDocuments();
-  if(qCount === 0){
-    await Question.insertMany(QUESTIONS);
-    console.log('Seeded questions');
-  } else { console.log('Questions already seeded'); }
-  const tCount = await Team.countDocuments();
-  if(tCount === 0){
-    await Team.insertMany(TEAMS);
-    console.log('Seeded teams');
-  } else { console.log('Teams already seeded'); }
+  console.log("✅ Connected to", MONGODB_URI);
+
+  // ⚠️ Clear old data (IMPORTANT)
+  await Question.deleteMany({});
+  await Team.deleteMany({});
+
+  // Insert fresh data
+  await Question.insertMany(QUESTIONS);
+  console.log("🌱 Questions seeded");
+
+  await Team.insertMany(TEAMS);
+  console.log("🌱 Teams seeded");
+
   await mongoose.disconnect();
-  console.log('Done');
+  console.log("🎉 Done");
 }
-seed().catch(err=>{ console.error(err); process.exit(1); });
+
+seed().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

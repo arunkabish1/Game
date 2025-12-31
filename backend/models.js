@@ -1,12 +1,13 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
+/* ---------------- TEAM ---------------- */
 const TeamSchema = new Schema({
   id: { type: String, required: true, unique: true },
   name: { type: String, required: true },
 
-  // IMPORTANT DEFAULTS
-  progress: { type: Number, default: 1 },  // Teams always start at Level 1
+  // GAME PROGRESS
+  progress: { type: Number, default: 1 },   // starts at level 1
   total_time_ms: { type: Number, default: 0 },
   currentLevelStart: { type: Number, default: null },
 
@@ -14,15 +15,21 @@ const TeamSchema = new Schema({
     type: Map,
     of: Number,
     default: {}
-  }
+  },
+
+  // 🔒 LOCK SYSTEM (IMPORTANT)
+  lockUntil: { type: Number, default: null }
 });
 
+/* ---------------- QUESTION ---------------- */
 const QuestionSchema = new Schema({
-  level: { type: Number, unique: true },
+  level: Number,
   question: String,
+  options: [String],
   answer: String
 });
 
+/* ---------------- TOKEN ---------------- */
 const TokenSchema = new Schema({
   level: Number,
   qid: String,
@@ -30,6 +37,7 @@ const TokenSchema = new Schema({
   issuedAt: Number
 });
 
+/* ---------------- ATTEMPT ---------------- */
 const AttemptSchema = new Schema({
   teamId: String,
   level: Number,

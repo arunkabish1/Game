@@ -56,7 +56,9 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("disconnect", () => console.log("🔴 Client disconnected"));
+  socket.on("disconnect", () =>
+    console.log("🔴 Client disconnected:", socket.id)
+  );
 });
 
 // -------------------------------------
@@ -69,6 +71,7 @@ async function computeLeaderboard() {
     if (a.progress !== b.progress) return b.progress - a.progress;
     return (a.total_time_ms || 0) - (b.total_time_ms || 0);
   });
+  console.log(teams)
 
   return teams.map((t) => ({
     id: t.id,
@@ -93,10 +96,19 @@ app.post("/api/scan", async (req, res) => {
     if (!payload) return res.status(400).send({ error: "invalid token" });
 
     const level = payload.level;
-
     const team = await Team.findOne({ id: teamId });
+
     if (!team) return res.status(404).send({ error: "team not found" });
 
+    // 🔒 WRONG ANSWER LOCK CHECK
+    if (team.lockUntil && Date.now() < team.lockUntil) {
+      return res.status(403).send({
+        error: "locked",
+        waitMs: team.lockUntil - Date.now(),
+      });
+    }
+
+    // LEVEL CHECK
     if (level !== team.progress) {
       return res.status(403).send({
         error: "locked",
@@ -117,9 +129,13 @@ app.post("/api/scan", async (req, res) => {
       startTs: team.currentLevelStart,
     });
 
+    // SEND QUESTION + OPTIONS
     return res.send({
-      question: question.question,
       level,
+      question: {
+        text: question.question,
+        options: question.options,
+      },
     });
   } catch (err) {
     console.error("SCAN ERROR:", err);
@@ -161,22 +177,16 @@ app.post("/api/answer", async (req, res) => {
     let timeTaken = null;
 
     // -------------------------
-    // Time tracking
+    // TIME TRACKING
     // -------------------------
     if (team.currentLevelStart) {
       timeTaken = now - team.currentLevelStart;
-
       team.total_time_ms = (team.total_time_ms || 0) + timeTaken;
-
-      if (!team.level_times || typeof team.level_times !== "object") {
-        team.level_times = {};
-      }
-
-      team.level_times[String(level)] = timeTaken;
+      team.level_times.set(String(level), timeTaken);
       team.currentLevelStart = null;
     }
 
-    // Log attempt
+    // LOG ATTEMPT
     await Attempt.create({
       teamId,
       level,
@@ -186,8 +196,12 @@ app.post("/api/answer", async (req, res) => {
       ts: now,
     });
 
+    // -------------------------
+    // CORRECT ANSWER
+    // -------------------------
     if (correct) {
       team.progress = Math.min(10, team.progress + 1);
+      team.lockUntil = null; // 🔓 clear lock
       await team.save();
 
       const leaderboard = await computeLeaderboard();
@@ -201,8 +215,16 @@ app.post("/api/answer", async (req, res) => {
       });
     }
 
+    // -------------------------
+    // WRONG ANSWER → 30s LOCK
+    // -------------------------
+    team.lockUntil = Date.now() + 30 * 1000;
     await team.save();
-    return res.send({ correct: false });
+
+    return res.send({
+      correct: false,
+      lockUntil: team.lockUntil,
+    });
   } catch (err) {
     console.error("ANSWER ERROR:", err);
     return res.status(500).send({ error: "server error" });
@@ -210,13 +232,12 @@ app.post("/api/answer", async (req, res) => {
 });
 
 // -------------------------------------
-//  TEAM FETCH ENDPOINT
+//  TEAM FETCH
 // -------------------------------------
 app.get("/api/team/:id", async (req, res) => {
   try {
     const team = await Team.findOne({ id: req.params.id }).lean();
     if (!team) return res.status(404).json({ error: "Team not found" });
-
     return res.json({ ok: true, team });
   } catch (err) {
     console.error("TEAM FETCH ERROR:", err);
@@ -225,7 +246,7 @@ app.get("/api/team/:id", async (req, res) => {
 });
 
 // -------------------------------------
-//  LEADERBOARD ROUTE
+//  LEADERBOARD
 // -------------------------------------
 app.get("/api/leaderboard", async (req, res) => {
   const leaderboard = await computeLeaderboard();
@@ -246,7 +267,7 @@ server.listen(PORT, () => {
   try {
     const t = fs.readFileSync("tokens.json", "utf8");
     console.log("📦 tokens.json loaded, tokens:", JSON.parse(t).length);
-  } catch (e) {
+  } catch {
     console.log("⚠️ No tokens.json found");
   }
 });
