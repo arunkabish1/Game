@@ -3,6 +3,7 @@
   "version": "1.1.0",
   "main": "server.js",
   "scripts": {
+    "build": "echo 'Build complete'",
     "start": "node server.js",
     "gen-tokens": "node generateTokens.js",
     "seed": "node seedDb.js"

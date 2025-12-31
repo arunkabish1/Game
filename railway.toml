@@ -8,7 +8,7 @@ packages = ["nodejs", "npm"]
 cmd = "cd backend && npm ci"
 
 [phases.build]
-cmd = "echo 'Build complete - dependencies installed'"
+cmd = "cd backend && npm run build || echo 'Build phase complete'"
 
 [start]
 cmd = "cd backend && node server.js"
