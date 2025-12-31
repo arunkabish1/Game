@@ -9,4 +9,3 @@ cmds = ["echo 'Build complete'"]
 
 [start]
 cmd = "cd backend && node server.js"
-

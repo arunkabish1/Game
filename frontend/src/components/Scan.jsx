@@ -360,7 +360,7 @@ export default function Scan({ teamId, socket, serverStartTs }) {
       )}
 
       {/* --- MANUAL INPUT FOR TESTING --- */}
-      <div className={`bg-slate-800 p-3 rounded mb-3 border ${lockCountdown > 0 ? 'border-red-600 opacity-50' : 'border-slate-600'}`}>
+      {/* <div className={`bg-slate-800 p-3 rounded mb-3 border ${lockCountdown > 0 ? 'border-red-600 opacity-50' : 'border-slate-600'}`}>
         <div className="text-slate-300 text-sm mb-2 font-semibold">🧪 Manual Input (Testing)</div>
         <div className="flex gap-2">
           <input
@@ -396,7 +396,7 @@ export default function Scan({ teamId, socket, serverStartTs }) {
             Submit Token
           </button>
         </div>
-      </div>
+      </div> */}
 
       {/* --- MESSAGES --- */}
       {message && lockCountdown === 0 && (
@@ -406,46 +406,57 @@ export default function Scan({ teamId, socket, serverStartTs }) {
       {/* --- QUESTION VIEW --- */}
       {question && (
         <div className={`bg-slate-700 p-3 rounded ${lockCountdown > 0 ? 'opacity-50' : ''}`}>
-          <div className="text-white text-lg mb-2">
+          <div className="text-white text-lg mb-4 font-semibold">
             {typeof question === 'string' ? question : question.text || question}
           </div>
 
-          {/* Show options if available */}
-          {question.options && Array.isArray(question.options) && question.options.length > 0 && (
-            <div className="text-slate-300 text-sm mb-3">
-              <div className="font-semibold mb-1">Options:</div>
-              <ul className="list-disc list-inside space-y-1">
-                {question.options.map((opt, idx) => (
-                  <li key={idx}>{opt}</li>
-                ))}
-              </ul>
+          {/* Show options as selectable buttons */}
+          {question.options && Array.isArray(question.options) && question.options.length > 0 ? (
+            <div className="space-y-2">
+              <div className="text-slate-300 text-sm mb-3 font-semibold">Select your answer:</div>
+              {question.options.map((opt, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    if (lockCountdown === 0) {
+                      submitAnswer(opt);
+                    }
+                  }}
+                  disabled={lockCountdown > 0}
+                  className="w-full text-left px-4 py-3 rounded bg-slate-600 text-white hover:bg-slate-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors border-2 border-transparent hover:border-emerald-400"
+                >
+                  <span className="font-semibold mr-2 text-emerald-400">{String.fromCharCode(65 + idx)}.</span>
+                  {opt}
+                </button>
+              ))}
+            </div>
+          ) : (
+            // Fallback to text input if no options available
+            <div className="flex gap-2">
+              <input 
+                id="ans" 
+                className="flex-1 px-2 py-2 rounded bg-slate-600 text-white disabled:opacity-50 disabled:cursor-not-allowed" 
+                placeholder={lockCountdown > 0 ? "Locked..." : "Enter answer..."}
+                disabled={lockCountdown > 0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && lockCountdown === 0) {
+                    submitAnswer(e.target.value);
+                  }
+                }}
+              />
+              <button
+                onClick={() => {
+                  if (lockCountdown === 0) {
+                    submitAnswer(document.getElementById("ans").value);
+                  }
+                }}
+                disabled={lockCountdown > 0}
+                className="bg-amber-400 text-black px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Submit
+              </button>
             </div>
           )}
-
-          <div className="flex gap-2">
-            <input 
-              id="ans" 
-              className="flex-1 px-2 py-2 rounded bg-slate-600 text-white disabled:opacity-50 disabled:cursor-not-allowed" 
-              placeholder={lockCountdown > 0 ? "Locked..." : "Enter answer..."}
-              disabled={lockCountdown > 0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && lockCountdown === 0) {
-                  submitAnswer(e.target.value);
-                }
-              }}
-            />
-            <button
-              onClick={() => {
-                if (lockCountdown === 0) {
-                  submitAnswer(document.getElementById("ans").value);
-                }
-              }}
-              disabled={lockCountdown > 0}
-              className="bg-amber-400 text-black px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Submit
-            </button>
-          </div>
         </div>
       )}
 

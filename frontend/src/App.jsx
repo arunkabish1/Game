@@ -72,8 +72,10 @@ export default function App() {
   if (screen === "home") {
     return (
       <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center px-4">
+        <img src="https://res.cloudinary.com/delx0bz9t/image/upload/v1762703907/events/x4swrcgshquiqgz8rqx0.png" alt="NFA Logo" className="w-32 h-32 mb-4" />
 
-        <h1 className="text-3xl font-bold mb-8">QR Hunt</h1>
+        <h1 className="text-3xl font-bold mb-8">NFA QR HUNT</h1>
+        
 
         {/* team selector */}
         <div className="mb-8">
