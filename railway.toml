@@ -5,7 +5,10 @@ builder = "NIXPACKS"
 packages = ["nodejs", "npm"]
 
 [phases.install]
-cmd = "cd backend && npm install"
+cmd = "cd backend && npm ci"
+
+[phases.build]
+cmd = "echo 'Build complete - dependencies installed'"
 
 [start]
-cmd = "node backend/server.js"
+cmd = "cd backend && node server.js"
