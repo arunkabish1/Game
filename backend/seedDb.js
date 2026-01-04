@@ -30,8 +30,8 @@ const QUESTIONS = [
   {
     level: 4,
     question: "மங்காப் மையத்தின் வகுப்பு நேரம் என்ன?",
-    options: ["8.00–9.30", "9.30–11.00", "10.00–11.30", "Any time"],
-    answer: "9.30–11.00" || "9.30 - 11.00",
+    options: ["8.00–9.30", "9:30 AM to 11:30 AM", "10:00 AM to 11:30 AM", "Any time"],
+    answer: "9:30 AM to 11:30 AM",
   },
   {
     level: 5,
@@ -48,14 +48,14 @@ const QUESTIONS = [
   {
     level: 6,
     question: "NFA நிறுவனரின் பெயர் என்ன? (தமிழ் அல்லது ஆங்கிலம்)",
-    options: ["செந்தை ரவி" || "Senthai Ravi", "ரவி குமார்" || "Ravi Kumar", "அருண் ரவி" || "Arun Ravi", "முரளி" || "Murli"],
-    answer: "செந்தை ரவி" || "Senthai Ravi",
+    options: ["சேந்தை ரவி" || "Senthai Ravi", "ரவி குமார்" || "Ravi Kumar", "அருண் ரவி" || "Arun Ravi", "முரளி" || "Murli"],
+    answer: "சேந்தை ரவி" || "Senthai Ravi",
   },
   {
     level: 7,
     question: "இந்த NFA பொங்கல் விழாவின் ஆதரவாளர் (Sponsor) யார்?",
-    options: ["Supreme Cargo", "ABC Logistics", "Star Transport", "NFA"],
-    answer: "Supreme Cargo",
+    options: ["Supreme group", "ABC Logistics", "Star Transport", "NFA"],
+    answer: "Supreme group",
   },
   {
     level: 8,
@@ -65,20 +65,23 @@ const QUESTIONS = [
   },
   {
     level: 9,
-    question: "NFA என்றால் என்ன? (தமிழ் அல்லது ஆங்கிலம்)",
+    question: "சிலம்பம் பயிற்சி எந்த பகுதியில் நடைபெறுகிறது?",
     options: [
-      "நந்தவனம் குடும்ப சங்கம் " || "Nandhavanam Family Association",
-      "நந்தவனம் கல்வி அமைப்பு" || "Nandhavanam Education System",
-      "தேசிய  அமைப்பு" || "National Federal Association",
-      "நந்தவனம் தமிழ் சங்கம்" || "Nandhavanam Tamil Association",
+      "Salmiya","Mangaf", 
+      "Abu halifa",
+      "Fahaheel", 
     ],
-    answer: "நந்தவனம் குடும்ப சங்கம்" || "Nandhavanam Family Association",
+    answer: "Mangaf",
   },
   {
     level: 10,
-    question: "Nandhavanam Family Association Website URL (eg - www.nandhavanam.com) ",
-    options: ["www.nfa.kuwait", "www.nandhavanam.com", "nfakuwait", "www.nfa.in"],
-    answer: "nfakuwait",
+    question: "தமிழக அரசு NFA க்கு வழங்கிய முதல் புத்தகத்தின் பெயர்?",
+    options: ["சிகரம்",
+      "உகரம்",
+      "அகரம்",
+      "ழகரம்",
+    ],
+    answer: "அகரம்",
   },
 ];
 
@@ -86,11 +89,11 @@ const QUESTIONS = [
    TEAMS
 ----------------------------------- */
 const TEAMS = [
-  { id: "team1", name: "Team Red" },
+  { id: "team1", name: "Team Orange" },
   { id: "team2", name: "Team Yellow" },
   { id: "team3", name: "Team Green" },
-  { id: "team4", name: "Team Purple" },
-  { id: "team5", name: "Team White" },
+  { id: "team4", name: "Team Blue" },
+  { id: "team5", name: "Team Red" },
   { id: "team6", name: "Team Pink" },
 ];
 
