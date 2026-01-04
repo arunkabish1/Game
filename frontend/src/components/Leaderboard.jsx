@@ -48,7 +48,10 @@ export default function Leaderboard({ data = [], selectedTeamId }) {
       {/* Full List */}
       <ol className="list-decimal pl-5">
         {data.map((t) => {
-          const levelsCompleted = Math.max(0, (t.progress || 1) - 1);
+          // If progress > 10, game is completed (10 levels done)
+          // Otherwise, levelsCompleted = progress - 1 (e.g., progress 5 means 4 levels completed)
+          const levelsCompleted = t.progress > 10 ? 10 : Math.max(0, (t.progress || 1) - 1);
+          const isGameCompleted = t.progress > 10;
           const isSelected = t.id === selectedTeamId;
 
           return (
@@ -63,8 +66,8 @@ export default function Leaderboard({ data = [], selectedTeamId }) {
                 <div>
                   <strong className="text-base">{t.name}</strong>
 
-                  <div className="text-xs text-slate-400">
-                    Lvl: {levelsCompleted}
+                  <div className={`text-xs ${isGameCompleted ? 'text-yellow-400 font-semibold' : 'text-slate-400'}`}>
+                    {isGameCompleted ? '✅ Completed: Lvl 10' : `Lvl: ${levelsCompleted}`}
                   </div>
 
                   <div className="text-xs text-slate-500">

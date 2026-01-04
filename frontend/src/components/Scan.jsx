@@ -15,24 +15,34 @@ export default function Scan({ teamId, socket, serverStartTs }) {
   const [torchOn, setTorchOn] = useState(false);
 
   const [question, setQuestion] = useState(null);
+  const [currentLevel, setCurrentLevel] = useState(null);
   const [lastToken, setLastToken] = useState(null);
   const [message, setMessage] = useState(null);
   const [teamProgress, setTeamProgress] = useState(1);
   const [lockUntil, setLockUntil] = useState(null);
   const [lockCountdown, setLockCountdown] = useState(0);
+  const [gameCompleted, setGameCompleted] = useState(false);
 
   /* --------------------------------------
      SOCKET EVENTS
   -------------------------------------- */
   useEffect(() => {
     socket?.on("team:update", (team) => {
-      if (team.id === teamId) setTeamProgress(team.progress);
+      if (team.id === teamId) {
+        setTeamProgress(team.progress);
+        setGameCompleted(team.progress > 10);
+      }
     });
 
     return () => {
       socket?.off("team:update");
     };
   }, [socket, teamId]);
+
+  // Initialize game completed state from teamProgress
+  useEffect(() => {
+    setGameCompleted(teamProgress > 10);
+  }, [teamProgress]);
 
   /* --------------------------------------
      LOAD CAMERA DEVICES
@@ -141,7 +151,16 @@ export default function Scan({ teamId, socket, serverStartTs }) {
       return;
     }
 
+    // Check if game is completed
+    if (data.completed) {
+      setGameCompleted(true);
+      setQuestion(null);
+      setMessage(data.message || "🎉 Congratulations! You have completed all 10 levels!");
+      return;
+    }
+
     setQuestion(data.question);
+    setCurrentLevel(data.level);
     setLastToken(token);
     setMessage(null);
   }, [teamId]);
@@ -224,8 +243,14 @@ export default function Scan({ teamId, socket, serverStartTs }) {
     const data = await resp.json();
 
     if (data.correct) {
-      setMessage("Correct! Level unlocked.");
+      if (data.completed) {
+        setGameCompleted(true);
+        setMessage(data.message || "🎉 Congratulations! You have completed all 10 levels!");
+      } else {
+        setMessage(`Correct! Level ${data.nextLevel} unlocked.`);
+      }
       setQuestion(null);
+      setCurrentLevel(null);
       setLastToken(null);
       setLockUntil(null); // Clear any lock
     } else {
@@ -277,7 +302,7 @@ export default function Scan({ teamId, socket, serverStartTs }) {
     <div className="flex flex-col h-full">
       {/* --- PROGRESS & TIMER --- */}
       <div className="flex items-center gap-4 mb-4">
-        <ProgressBarVertical percent={teamProgress * 10} />
+        <ProgressBarVertical percent={gameCompleted ? 100 : Math.min(100, teamProgress * 10)} />
         <TimerDisplay startTs={serverStartTs} big />
       </div>
 
@@ -285,10 +310,10 @@ export default function Scan({ teamId, socket, serverStartTs }) {
       <div className="flex gap-2 mb-3 flex-wrap">
         <button
           onClick={startScan}
-          disabled={scanning || !selectedDeviceId || lockCountdown > 0}
+          disabled={scanning || !selectedDeviceId || lockCountdown > 0 || gameCompleted}
           className="bg-emerald-500 text-black px-4 py-2 rounded disabled:opacity-50"
         >
-          {scanning ? "Scanning…" : "Start Scan"}
+          {scanning ? "Scanning…" : gameCompleted ? "Game Completed" : "Start Scan"}
         </button>
 
         {scanning && (
@@ -360,52 +385,70 @@ export default function Scan({ teamId, socket, serverStartTs }) {
       )}
 
       {/* --- MANUAL INPUT FOR TESTING --- */}
-      {/* <div className={`bg-slate-800 p-3 rounded mb-3 border ${lockCountdown > 0 ? 'border-red-600 opacity-50' : 'border-slate-600'}`}>
-        <div className="text-slate-300 text-sm mb-2 font-semibold">🧪 Manual Input (Testing)</div>
-        <div className="flex gap-2">
-          <input
-            id="manualToken"
-            type="text"
-            placeholder={lockCountdown > 0 ? "Locked..." : "Enter QR token manually..."}
-            disabled={lockCountdown > 0}
-            className="flex-1 px-3 py-2 rounded bg-slate-700 text-white border border-slate-600 focus:outline-none focus:border-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && lockCountdown === 0) {
-                const token = e.target.value.trim();
-                if (token) {
-                  handleToken(token);
-                  e.target.value = "";
+      {!gameCompleted && (
+        <div className={`bg-slate-800 p-3 rounded mb-3 border ${lockCountdown > 0 ? 'border-red-600 opacity-50' : 'border-slate-600'}`}>
+          <div className="text-slate-300 text-sm mb-2 font-semibold">🧪 Manual Input</div>
+          <div className="flex gap-2">
+            <input
+              id="manualToken"
+              type="text"
+              placeholder={lockCountdown > 0 ? "Locked..." : "Enter QR token manually..."}
+              disabled={lockCountdown > 0}
+              className="flex-1 px-3 py-2 rounded bg-slate-700 text-white border border-slate-600 focus:outline-none focus:border-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && lockCountdown === 0) {
+                  const token = e.target.value.trim();
+                  if (token) {
+                    handleToken(token);
+                    e.target.value = "";
+                  }
                 }
-              }
-            }}
-          />
-          <button
-            onClick={() => {
-              if (lockCountdown === 0) {
-                const input = document.getElementById("manualToken");
-                const token = input?.value.trim();
-                if (token) {
-                  handleToken(token);
-                  input.value = "";
+              }}
+            />
+            <button
+              onClick={() => {
+                if (lockCountdown === 0) {
+                  const input = document.getElementById("manualToken");
+                  const token = input?.value.trim();
+                  if (token) {
+                    handleToken(token);
+                    input.value = "";
+                  }
                 }
-              }
-            }}
-            disabled={lockCountdown > 0}
-            className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Submit Token
-          </button>
+              }}
+              disabled={lockCountdown > 0}
+              className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Submit Token
+            </button>
+          </div>
         </div>
-      </div> */}
+      )}
+
+      {/* --- GAME COMPLETED MESSAGE --- */}
+      {gameCompleted && (
+        <div className="bg-gradient-to-r from-yellow-600 to-yellow-500 text-black p-6 rounded-lg mb-4 text-center border-4 border-yellow-300">
+          <div className="text-3xl font-bold mb-2">🎉 Congratulations! 🎉</div>
+          <div className="text-xl font-semibold">You have completed all 10 levels!</div>
+          <div className="text-sm mt-2 text-yellow-900">The game is complete!</div>
+        </div>
+      )}
 
       {/* --- MESSAGES --- */}
       {message && lockCountdown === 0 && (
-        <div className="text-yellow-300 mb-2">{message}</div>
+        <div className={`mb-2 ${gameCompleted ? 'text-yellow-300 text-lg font-semibold' : 'text-yellow-300'}`}>
+          {message}
+        </div>
       )}
 
       {/* --- QUESTION VIEW --- */}
-      {question && (
+      {question && !gameCompleted && (
         <div className={`bg-slate-700 p-3 rounded ${lockCountdown > 0 ? 'opacity-50' : ''}`}>
+          {currentLevel && (
+            <div className="text-emerald-400 text-sm mb-2 font-semibold">
+              Level {currentLevel} of 10
+            </div>
+          )}
           <div className="text-white text-lg mb-4 font-semibold">
             {typeof question === 'string' ? question : question.text || question}
           </div>

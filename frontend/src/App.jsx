@@ -85,11 +85,11 @@ export default function App() {
             onChange={(e) => setTeamId(e.target.value)}
             className="rounded px-3 py-2 bg-slate-800 border border-slate-700"
           >
-            <option value="team1">Team Red</option>
+            <option value="team1">Team Orange</option>
             <option value="team2">Team Yellow</option>
             <option value="team3">Team Green</option>
-            <option value="team4">Team Purple</option>
-            <option value="team5">Team White</option>
+            <option value="team4">Team Blue</option>
+            <option value="team5">Team Red</option>
             <option value="team6">Team Pink</option>
           </select>
         </div>
