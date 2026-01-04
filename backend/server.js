@@ -78,6 +78,7 @@ async function computeLeaderboard() {
     name: t.name,
     progress: t.progress,
     total_time_ms: t.total_time_ms || 0,
+    level_times: t.level_times || {},
   }));
 }
 
@@ -105,6 +106,14 @@ app.post("/api/scan", async (req, res) => {
       return res.status(403).send({
         error: "locked",
         waitMs: team.lockUntil - Date.now(),
+      });
+    }
+
+    // GAME COMPLETED CHECK
+    if (team.progress > 10) {
+      return res.status(200).send({
+        completed: true,
+        message: "🎉 Congratulations! You have completed all 10 levels!",
       });
     }
 
@@ -200,7 +209,7 @@ app.post("/api/answer", async (req, res) => {
     // CORRECT ANSWER
     // -------------------------
     if (correct) {
-      team.progress = Math.min(10, team.progress + 1);
+      team.progress = team.progress + 1; // Allow progress to go to 11 when level 10 is completed
       team.lockUntil = null; // 🔓 clear lock
       await team.save();
 
@@ -209,9 +218,13 @@ app.post("/api/answer", async (req, res) => {
       io.emit("leaderboard:update", leaderboard);
       io.to(teamId).emit("team:update", team.toObject());
 
+      const isGameCompleted = team.progress > 10;
+
       return res.send({
         correct: true,
         nextLevel: team.progress,
+        completed: isGameCompleted,
+        message: isGameCompleted ? "🎉 Congratulations! You have completed all 10 levels!" : undefined,
       });
     }
 
