@@ -369,6 +369,8 @@ export default function Scan({ teamId, socket, serverStartTs }) {
           ref={videoRef}
           className="w-full h-72 bg-black object-cover"
           playsInline
+          muted
+          autoPlay
         />
       </div>
 
